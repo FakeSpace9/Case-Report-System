@@ -8,6 +8,7 @@ plugins {
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.composeHotReload)
+    id("com.google.gms.google-services")
 }
 
 kotlin {
@@ -33,17 +34,18 @@ kotlin {
         browser()
         binaries.executable()
     }
-    
+    /*
     @OptIn(ExperimentalWasmDsl::class)
     wasmJs {
         browser()
         binaries.executable()
     }
-    
+    */
     sourceSets {
         androidMain.dependencies {
             implementation(libs.compose.uiToolingPreview)
             implementation(libs.androidx.activity.compose)
+            implementation(project.dependencies.platform("com.google.firebase:firebase-bom:32.8.1"))
         }
         commonMain.dependencies {
             implementation(libs.compose.runtime)
@@ -54,6 +56,7 @@ kotlin {
             implementation(libs.compose.uiToolingPreview)
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
+            implementation("dev.gitlive:firebase-firestore:1.11.1")
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

@@ -18,7 +18,7 @@ import org.jetbrains.compose.resources.painterResource
 
 import casereportsystem.composeapp.generated.resources.Res
 import casereportsystem.composeapp.generated.resources.compose_multiplatform
-
+/*
 @Composable
 @Preview
 fun App() {
@@ -45,5 +45,14 @@ fun App() {
                 }
             }
         }
+    }
+}
+*/
+
+@Composable
+fun App() {
+    MaterialTheme {
+        // Just call the screen we just made!
+        ITDashboardScreen()
     }
 }
