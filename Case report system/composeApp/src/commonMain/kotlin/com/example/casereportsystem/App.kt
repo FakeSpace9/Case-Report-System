@@ -15,6 +15,9 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import org.jetbrains.compose.resources.painterResource
 
 import casereportsystem.composeapp.generated.resources.Res
@@ -53,24 +56,33 @@ fun App() {
 fun App() {
     MaterialTheme {
         Surface {
-            var currentScreen by remember { mutableStateOf("dashboard") }
+            // 1. Create the NavController
+            val navController = rememberNavController()
 
-            when (currentScreen) {
-                "dashboard" -> {
+            // 2. Set up the NavHost with "dashboard" as the starting screen
+            NavHost(navController = navController, startDestination = "dashboard") {
+
+                // Route 1: Dashboard
+                composable("dashboard") {
                     ITDashboardScreen(
-                        onCreateNewClick = { currentScreen = "create" },
-                        onAddCustomerClick = { currentScreen = "add_customer" } // New Route!
+                        onCreateNewClick = { navController.navigate("create") },
+                        onAddCustomerClick = { navController.navigate("add_customer") }
                     )
                 }
-                "create" -> {
+
+                // Route 2: Create Case
+                composable("create") {
                     CreateCaseScreen(
-                        onCaseCreated = { currentScreen = "dashboard" }
+                        // Use popBackStack() to properly go "back" to the previous screen
+                        onCaseCreated = { navController.popBackStack() }
                     )
                 }
-                "add_customer" -> {
+
+                // Route 3: Add Customer
+                composable("add_customer") {
                     AddCustomerScreen(
-                        onCustomerAdded = { currentScreen = "dashboard" },
-                        onCancel = { currentScreen = "dashboard" } // Also go back if they hit cancel
+                        onCustomerAdded = { navController.popBackStack() },
+                        onCancel = { navController.popBackStack() }
                     )
                 }
             }

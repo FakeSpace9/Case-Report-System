@@ -57,6 +57,7 @@ kotlin {
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
             implementation("dev.gitlive:firebase-firestore:1.11.1")
+            implementation("org.jetbrains.androidx.navigation:navigation-compose:2.8.0-alpha10")
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
