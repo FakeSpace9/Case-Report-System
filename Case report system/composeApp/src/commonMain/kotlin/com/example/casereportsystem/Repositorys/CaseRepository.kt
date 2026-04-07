@@ -1,50 +1,70 @@
-package com.example.casereportsystem
+package com.example.casereportsystem.Repositorys
 
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Card // Changed to material3
-import androidx.compose.material3.MaterialTheme // Changed to material3
-import androidx.compose.material3.Text // Changed to material3
-import androidx.compose.runtime.*
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import com.example.casereportsystem.models.Case
-import com.example.casereportsystem.repositories.CaseRepository
+import dev.gitlive.firebase.Firebase
+import dev.gitlive.firebase.firestore.firestore
+import dev.gitlive.firebase.firestore.where
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 
-@Composable
-fun ITDashboardScreen() {
-    val repository = remember { CaseRepository() }
-    val cases by repository.getActiveCases().collectAsState(initial = emptyList())
+class CaseRepository {
+    // 1. Get a reference to the Firestore database
+    private val db = Firebase.firestore
 
-    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-        // FIXED: Using MaterialTheme.typography.headlineSmall instead of h5
-        Text(text = "IT Support Dashboard", style = MaterialTheme.typography.headlineSmall)
-        Spacer(modifier = Modifier.height(16.dp))
+    // 2. Get a reference to the "cases" collection
+    private val casesCollection = db.collection("cases")
 
-        if (cases.isEmpty()) {
-            Text("No open cases right now! Good job.")
-        } else {
-            LazyColumn {
-                items(cases) { case ->
-                    CaseCard(case)
-                }
-            }
+    private val customersCollection = db.collection("customers")
+    /**
+     * Creates a new case in the database.
+     * The Receptionist app will call this function.
+     */
+    suspend fun createCase(newCase: Case) {
+        try {
+            // Firebase will automatically convert the 'Case' data class to a JSON document
+            casesCollection.document(newCase.id).set(newCase)
+        } catch (e: Exception) {
+            println("Error creating case: ${e.message}")
         }
     }
-}
 
-@Composable
-fun CaseCard(case: Case) {
-    Card(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
-        // Note: 'elevation' is handled differently in Material 3, so we remove it for this simple card
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            // FIXED: Using MaterialTheme.typography.titleMedium instead of h6
-            Text("Customer: ${case.customerName}", style = MaterialTheme.typography.titleMedium)
-            Text("Issue: ${case.title}")
-            Text("Status: ${case.status}")
+    /**
+     * Gets a real-time stream of all "open" or "in_progress" cases.
+     * The IT Dashboard will observe this Flow. If a new case is added,
+     * the UI will update automatically!
+     */
+    fun getActiveCases(): Flow<List<Case>> {
+        return casesCollection
+            .where { "status" equalTo "open" } // You can expand this to include "in_progress"
+            .snapshots
+            .map { querySnapshot ->
+                // Convert the Firebase snapshot back into a List of your Kotlin 'Case' objects
+                querySnapshot.documents.map { it.data<Case>() }
+            }
+    }
+
+    /**
+     * Updates an existing case (e.g., when IT staff takes over or resolves it)
+     */
+    suspend fun updateCaseStatus(caseId: String, newStatus: String, itUid: String, itName: String) {
+        try {
+            casesCollection.document(caseId).update(
+                "status" to newStatus,
+                "assignedItUid" to itUid,
+                "assignedItName" to itName
+            )
+        } catch (e: Exception) {
+            println("Error updating case: ${e.message}")
+        }
+    }
+    /**
+     * Creates a new customer in the database.
+     */
+    suspend fun createCustomer(newCustomer: com.example.casereportsystem.models.Customer) {
+        try {
+            customersCollection.document(newCustomer.id).set(newCustomer)
+        } catch (e: Exception) {
+            println("Error creating customer: ${e.message}")
         }
     }
 }

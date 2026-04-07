@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -48,11 +49,31 @@ fun App() {
     }
 }
 */
-
 @Composable
 fun App() {
     MaterialTheme {
-        // Just call the screen we just made!
-        ITDashboardScreen()
+        Surface {
+            var currentScreen by remember { mutableStateOf("dashboard") }
+
+            when (currentScreen) {
+                "dashboard" -> {
+                    ITDashboardScreen(
+                        onCreateNewClick = { currentScreen = "create" },
+                        onAddCustomerClick = { currentScreen = "add_customer" } // New Route!
+                    )
+                }
+                "create" -> {
+                    CreateCaseScreen(
+                        onCaseCreated = { currentScreen = "dashboard" }
+                    )
+                }
+                "add_customer" -> {
+                    AddCustomerScreen(
+                        onCustomerAdded = { currentScreen = "dashboard" },
+                        onCancel = { currentScreen = "dashboard" } // Also go back if they hit cancel
+                    )
+                }
+            }
+        }
     }
 }
